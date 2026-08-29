@@ -13,7 +13,10 @@ export default function MqttSensorPage() {
     tanggal_update: null,
   });
 
-  const [statusData, setStatusData] = useState({
+  const [statusData, setStatusData] = useState<{
+    status: string;
+    waktu_status: number | null;
+  }>({
     status: 'offline',
     waktu_status: null,
   });
@@ -81,7 +84,7 @@ export default function MqttSensorPage() {
   }, []);
 
   // Fungsi mengubah Unix Timestamp (Detik) ke format Waktu Indonesia Readable
-  const formatWaktu = (timestamp) => {
+  const formatWaktu = (timestamp: number | null): string => {
     if (!timestamp) return '-';
     const tanggal = new Date(timestamp * 1000); 
     return tanggal.toLocaleString('id-ID');
