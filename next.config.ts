@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
+  turbopack: {
+    resolveAlias: {
+      mqtt: 'mqtt',
+    },
+  },
 };
 
 export default nextConfig;
