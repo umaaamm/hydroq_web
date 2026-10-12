@@ -647,6 +647,65 @@ export default function MqttSensorPage() {
           </div>
         </section>
 
+        <section style={{
+          marginBottom: '32px',
+          padding: '22px 24px',
+          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(8, 47, 73, 0.55))',
+          border: '1px solid rgba(34, 211, 238, 0.25)',
+          borderRadius: '12px',
+        }}>
+          <div style={{ marginBottom: '16px' }}>
+            <p style={{ margin: '0 0 4px', color: '#67e8f9', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' }}>Panduan waktu budidaya</p>
+            <h2 style={{ margin: 0, color: '#e2e8f0', fontSize: '20px' }}>Semai dan panen</h2>
+            <p style={{ margin: '8px 0 0', color: '#94a3b8', fontSize: '12px', lineHeight: 1.6 }}>
+              HST dihitung sejak semai; HSPT dihitung sejak pindah tanam. Waktu aktual dipengaruhi varietas, suhu, cahaya, dan sistem budidaya.
+            </p>
+          </div>
+          <div className="harvest-table-wrap">
+            <table className="harvest-table">
+              <thead>
+                <tr>
+                  <th>Tanaman</th>
+                  <th>Siap pindah tanam</th>
+                  <th>Panen sejak semai (HST)</th>
+                  <th>Panen setelah pindah tanam (HSPT)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Selada</th>
+                  <td>28–42 HST (4–6 minggu)</td>
+                  <td>25–60 HST (baby leaf sampai matang)</td>
+                  <td>30–40 HSPT</td>
+                </tr>
+                <tr>
+                  <th scope="row">Pakcoy</th>
+                  <td>11–16 HST (perkiraan, sejak berkecambah)</td>
+                  <td>35–56 hari setelah berkecambah (≈ HST)</td>
+                  <td>19–45 HSPT (perkiraan)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p style={{ margin: '12px 0 0', color: '#bae6fd', fontSize: '12px', lineHeight: 1.6 }}>
+            <strong>Arti 30–40 hari HSPT untuk selada:</strong> hitung mulai hari bibit dipindahkan ke sistem hidroponik. Contoh, bila pindah tanam pada 1 Juni, perkiraan panen adalah sekitar 1–11 Juli. Masa semai sebelum pindah tanam tidak dihitung dalam HSPT.
+          </p>
+          <p style={{ margin: '12px 0 0', color: '#fcd34d', fontSize: '12px', lineHeight: 1.6 }}>
+            Kisaran siap pindah tanam pakcoy dihitung dari perkecambahan 1–2 hari ditambah 10–14 hari setelah berkecambah. HSPT pakcoy adalah perkiraan selisih dari rentang panen sejak berkecambah dan umur pindah tanam, bukan hasil pengukuran langsung satu penelitian. Panen baby leaf bisa lebih awal; gunakan ukuran dan kondisi tanaman sebagai penentu akhir.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 18px', marginTop: '12px', fontSize: '12px' }}>
+            <a href="https://www.canr.msu.edu/resources/how_to_grow_lettuce" target="_blank" rel="noreferrer" style={{ color: '#67e8f9', textDecoration: 'underline' }}>
+              Michigan State University: How to Grow Lettuce
+            </a>
+            <a href="https://www.uog.edu/_resources/files/wptrc/Growing-Bok-Choy.pdf" target="_blank" rel="noreferrer" style={{ color: '#67e8f9', textDecoration: 'underline' }}>
+              University of Guam: Growing Bok Choy
+            </a>
+            <a href="https://agriculture.gov.tt/wp-content/uploads/2017/11/how-to-grow-pak-choi.pdf" target="_blank" rel="noreferrer" style={{ color: '#67e8f9', textDecoration: 'underline' }}>
+              Ministry of Agriculture, Trinidad and Tobago: How to Grow Pak Choi
+            </a>
+          </div>
+        </section>
+
         {/* Grafik Sensor PPM dan Suhu Air */}
         <div style={{
           marginBottom: '32px',
@@ -888,6 +947,46 @@ export default function MqttSensorPage() {
         .tank-dose-field input:focus {
           outline: 2px solid rgba(34, 211, 238, 0.75);
           outline-offset: 1px;
+        }
+
+        .harvest-table-wrap {
+          width: 100%;
+          overflow-x: auto;
+          border: 1px solid rgba(148, 163, 184, 0.22);
+          border-radius: 8px;
+        }
+
+        .harvest-table {
+          width: 100%;
+          min-width: 690px;
+          border-collapse: collapse;
+          color: #e2e8f0;
+          font-size: 13px;
+          text-align: left;
+        }
+
+        .harvest-table th,
+        .harvest-table td {
+          padding: 12px 14px;
+          border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+          vertical-align: top;
+        }
+
+        .harvest-table thead th {
+          color: #a5f3fc;
+          background: rgba(8, 47, 73, 0.62);
+          font-size: 11px;
+          text-transform: uppercase;
+        }
+
+        .harvest-table tbody th {
+          color: #f8fafc;
+          white-space: nowrap;
+        }
+
+        .harvest-table tbody tr:last-child th,
+        .harvest-table tbody tr:last-child td {
+          border-bottom: 0;
         }
 
         @media (max-width: 640px) {
