@@ -8,6 +8,8 @@ export default function MqttSensorPage() {
   const [sensorData, setSensorData] = useState({
     ppm: 0,
     suhu: 0.0,
+    rssi: 0,
+    heap: 0,
     tanggal_update: null,
   });
 
@@ -87,6 +89,16 @@ export default function MqttSensorPage() {
     const tanggal = new Date(timestamp * 1000); 
     return tanggal.toLocaleString('id-ID');
   };
+
+  const getWifiQuality = (rssi: number): string => {
+    if (rssi >= -50) return 'Sangat kuat';
+    if (rssi >= -60) return 'Kuat';
+    if (rssi >= -70) return 'Cukup baik';
+    if (rssi >= -80) return 'Lemah';
+    return 'Sangat lemah';
+  };
+
+  const formatHeap = (value: number): string => `${value.toLocaleString('id-ID')} byte`;
 
   return (
     <div style={{ 
@@ -179,6 +191,71 @@ export default function MqttSensorPage() {
                 textTransform: 'capitalize'
               }}>{statusData.status}</p>
             </div>
+          </div>
+        </div>
+
+        {/* Network & Memory Status */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+          <div style={{
+            padding: '24px',
+            background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.05) 100%)',
+            borderRadius: '12px',
+            border: '2px solid rgba(34, 197, 94, 0.3)',
+            boxShadow: '0 10px 30px rgba(34, 197, 94, 0.1)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: '-50%',
+              right: '-50%',
+              width: '200px',
+              height: '200px',
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(34, 197, 94, 0.18) 0%, transparent 70%)',
+              pointerEvents: 'none'
+            }}></div>
+            <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px' }}>📶 RSSI Wi‑Fi</p>
+            <p style={{ margin: '0', fontSize: '36px', fontWeight: '700', color: '#4ade80' }}>
+              {sensorData.rssi} dBm
+            </p>
+            <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#b7f0c8', fontWeight: '600' }}>
+              {getWifiQuality(sensorData.rssi)}
+            </p>
+            <p style={{ margin: '8px 0 0 0', fontSize: '11px', color: '#64748b' }}>
+              Semakin mendekati 0, sinyal semakin kuat
+            </p>
+          </div>
+
+          <div style={{
+            padding: '24px',
+            background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(168, 85, 247, 0.05) 100%)',
+            borderRadius: '12px',
+            border: '2px solid rgba(168, 85, 247, 0.3)',
+            boxShadow: '0 10px 30px rgba(168, 85, 247, 0.1)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: '-50%',
+              right: '-50%',
+              width: '200px',
+              height: '200px',
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(168, 85, 247, 0.18) 0%, transparent 70%)',
+              pointerEvents: 'none'
+            }}></div>
+            <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px' }}>🧠 Heap RAM</p>
+            <p style={{ margin: '0', fontSize: '30px', fontWeight: '700', color: '#c084fc' }}>
+              {formatHeap(sensorData.heap)}
+            </p>
+            <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#e9d5ff', fontWeight: '600' }}>
+              RAM bebas tersedia
+            </p>
+            <p style={{ margin: '8px 0 0 0', fontSize: '11px', color: '#64748b' }}>
+              Digunakan untuk Wi‑Fi, MQTT, dan pemrosesan sensor
+            </p>
           </div>
         </div>
 
