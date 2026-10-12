@@ -24,9 +24,12 @@ export default function MqttSensorPage() {
   const [statusKoneksi, setStatusKoneksi] = useState('Menghubungkan...');
   const [historyPpm, setHistoryPpm] = useState<number[]>(Array.from({ length: 20 }, () => 0));
   const [historySuhu, setHistorySuhu] = useState<number[]>(Array.from({ length: 20 }, () => 0));
+  const [hasSensorReading, setHasSensorReading] = useState(false);
   const [selectedCrop, setSelectedCrop] = useState<'selada' | 'pakcoy' | 'tandon_bersama'>('selada');
   const [selectedPhase, setSelectedPhase] = useState<'semai' | 'vegetatif' | 'utama'>('vegetatif');
   const [ppmScale, setPpmScale] = useState<500 | 700>(700);
+  const [tankVolumeInput, setTankVolumeInput] = useState('');
+  const nutrientDoseMlPerLiter = 5;
 
   const growthPhaseLabels = {
     semai: 'Fase Benih / Semaian',
@@ -118,6 +121,7 @@ export default function MqttSensorPage() {
           // Parsing JSON untuk hydroq/data
           const parsingData = JSON.parse(pesanString);
           setSensorData(parsingData);
+          setHasSensorReading(true);
           setHistoryPpm(prev => {
             const next = [...prev, Number(parsingData.ppm ?? 0)];
             return next.slice(-20);
@@ -222,6 +226,39 @@ export default function MqttSensorPage() {
   const suhuStatus = getStatusLevel(sensorData.suhu, selectedThreshold.suhu.min, selectedThreshold.suhu.max);
   const ppmProgress = clamp(((sensorData.ppm - ppmThreshold.min) / (ppmThreshold.max - ppmThreshold.min || 1)) * 100, 0, 100);
   const suhuProgress = clamp(((sensorData.suhu - selectedThreshold.suhu.min) / (selectedThreshold.suhu.max - selectedThreshold.suhu.min || 1)) * 100, 0, 100);
+  const tankVolumeLiters = Number(tankVolumeInput);
+  const isMixCalculationValid = tankVolumeInput !== ''
+    && Number.isFinite(tankVolumeLiters)
+    && tankVolumeLiters > 0;
+  const nutrientATotalMl = isMixCalculationValid ? tankVolumeLiters * nutrientDoseMlPerLiter : null;
+  const nutrientBTotalMl = nutrientATotalMl;
+  const ppmRecommendation = !hasSensorReading || !Number.isFinite(sensorData.ppm)
+    ? {
+        title: 'Menunggu data sensor',
+        action: 'Rekomendasi akan muncul setelah pembacaan PPM diterima dari MQTT.',
+        color: '#cbd5e1',
+        background: 'rgba(100, 116, 139, 0.14)',
+      }
+    : ppmStatus === 'rendah'
+      ? {
+          title: 'PPM rendah: nutrisi kurang',
+          action: 'Tambahkan nutrisi hidroponik A dan B secara bertahap mengikuti dosis label produk. Aduk atau sirkulasikan larutan sampai homogen, lalu ukur ulang sebelum menambah lagi.',
+          color: '#fde68a',
+          background: 'rgba(217, 119, 6, 0.14)',
+        }
+      : ppmStatus === 'tinggi'
+        ? {
+            title: 'PPM tinggi: larutan terlalu pekat',
+            action: 'Tambahkan air bersih yang sesuai untuk hidroponik sedikit demi sedikit, sirkulasikan sampai homogen, lalu ukur ulang. Jika tetap tinggi, koreksi atau ganti sebagian larutan.',
+            color: '#fecaca',
+            background: 'rgba(220, 38, 38, 0.14)',
+          }
+        : {
+            title: 'PPM normal',
+            action: 'Belum perlu menambah air atau nutrisi. Pertahankan sirkulasi dan pantau PPM serta pH secara berkala.',
+            color: '#bbf7d0',
+            background: 'rgba(22, 163, 74, 0.14)',
+          };
 
   const ppmStats = {
     min: Math.min(...historyPpm),
@@ -554,6 +591,62 @@ export default function MqttSensorPage() {
           </div>
         </div>
 
+        <section aria-live="polite" style={{
+          marginBottom: '32px',
+          padding: '20px 24px',
+          background: ppmRecommendation.background,
+          border: `1px solid ${ppmRecommendation.color}66`,
+          borderLeft: `4px solid ${ppmRecommendation.color}`,
+          borderRadius: '10px',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '12px', flexWrap: 'wrap' }}>
+            <h2 style={{ margin: 0, color: ppmRecommendation.color, fontSize: '17px' }}>
+              Rekomendasi PPM: {ppmRecommendation.title}
+            </h2>
+            <span style={{ color: '#cbd5e1', fontSize: '12px' }}>
+              {hasSensorReading ? `Terbaca ${sensorData.ppm} PPM · target ${ppmThreshold.min}–${ppmThreshold.max} PPM` : 'Belum ada pembacaan'}
+            </span>
+          </div>
+          <p style={{ margin: '10px 0 0', color: '#e2e8f0', fontSize: '14px', lineHeight: 1.65 }}>
+            {ppmRecommendation.action}
+          </p>
+          <p style={{ margin: '10px 0 0', color: '#94a3b8', fontSize: '12px', lineHeight: 1.6 }}>
+            Jangan menakar dosis hanya dari selisih PPM: jumlah air tandon dan konsentrasi produk berbeda-beda. Ikuti label pupuk, jangan mencampur konsentrat A dan B langsung satu sama lain, dan pastikan skala TDS meter sesuai. Prosedur penyesuaian EC dengan mengencerkan air atau menambah nutrisi serta mengukur ulang mengacu pada <a href="https://extension.okstate.edu/fact-sheets/electrical-conductivity-and-ph-guide-for-hydroponics.html" target="_blank" rel="noreferrer" style={{ color: '#67e8f9', textDecoration: 'underline' }}>Oklahoma State University Extension</a>.
+          </p>
+
+          <div style={{ marginTop: '20px', paddingTop: '18px', borderTop: '1px solid rgba(148, 163, 184, 0.2)' }}>
+            <h3 style={{ margin: '0 0 6px', color: '#e2e8f0', fontSize: '15px' }}>Kalkulator campuran tandon</h3>
+            <p style={{ margin: '0 0 14px', color: '#94a3b8', fontSize: '12px', lineHeight: 1.5 }}>
+              Masukkan volume tandon. Kalkulasi otomatis memakai {nutrientDoseMlPerLiter} mL/L untuk masing-masing A dan B.
+            </p>
+            <div className="tank-dose-grid tank-dose-grid-single">
+              <label className="tank-dose-field">
+                <span>Volume tandon (L)</span>
+                <input type="number" min="0.1" step="any" inputMode="decimal" value={tankVolumeInput} onChange={(event) => setTankVolumeInput(event.target.value)} placeholder="Contoh: 20" />
+              </label>
+            </div>
+            {isMixCalculationValid && nutrientATotalMl !== null && nutrientBTotalMl !== null ? (
+              <div aria-live="polite" style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '16px' }}>
+                <div style={{ flex: '1 1 180px', padding: '14px 16px', background: 'rgba(34, 211, 238, 0.1)', border: '1px solid rgba(34, 211, 238, 0.3)', borderRadius: '8px' }}>
+                  <div style={{ color: '#a5f3fc', fontSize: '12px' }}>Nutrisi A untuk {tankVolumeLiters} L</div>
+                  <strong style={{ display: 'block', marginTop: '4px', color: '#ecfeff', fontSize: '23px' }}>{nutrientATotalMl.toLocaleString('id-ID', { maximumFractionDigits: 1 })} mL</strong>
+                </div>
+                <div style={{ flex: '1 1 180px', padding: '14px 16px', background: 'rgba(96, 165, 250, 0.1)', border: '1px solid rgba(96, 165, 250, 0.3)', borderRadius: '8px' }}>
+                  <div style={{ color: '#bfdbfe', fontSize: '12px' }}>Nutrisi B untuk {tankVolumeLiters} L</div>
+                  <strong style={{ display: 'block', marginTop: '4px', color: '#eff6ff', fontSize: '23px' }}>{nutrientBTotalMl.toLocaleString('id-ID', { maximumFractionDigits: 1 })} mL</strong>
+                </div>
+              </div>
+            ) : (
+              <p style={{ margin: '12px 0 0', color: '#94a3b8', fontSize: '12px' }}>
+                Isi volume tandon untuk melihat hasil perhitungan A dan B.
+              </p>
+            )}
+            <p style={{ margin: '12px 0 0', color: '#fcd34d', fontSize: '12px', lineHeight: 1.55 }}>
+              Asumsi 5 mL/L per bagian bukan takaran universal. Cocokkan dengan label produk dan fase tanaman; bila label berbeda, jangan gunakan hasil hitung ini sebelum dosis bawaan disesuaikan. Ini bukan dosis koreksi dari PPM saat ini. Tambahkan A dan B secara terpisah ke air, jangan campur konsentrat langsung satu sama lain, aduk, lalu ukur PPM/EC kembali.
+            </p>
+          </div>
+        </section>
+
         {/* Grafik Sensor PPM dan Suhu Air */}
         <div style={{
           marginBottom: '32px',
@@ -758,11 +851,54 @@ export default function MqttSensorPage() {
           background-color: #0f172a;
         }
 
+        .tank-dose-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 12px;
+        }
+
+        .tank-dose-grid-single {
+          grid-template-columns: minmax(0, 1fr);
+          max-width: 360px;
+        }
+
+        .tank-dose-field {
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 7px;
+          color: #cbd5e1;
+          font-size: 12px;
+          font-weight: 600;
+        }
+
+        .tank-dose-field input {
+          width: 100%;
+          min-height: 46px;
+          box-sizing: border-box;
+          padding: 10px 12px;
+          border: 1px solid rgba(148, 163, 184, 0.4);
+          border-radius: 8px;
+          background: #0f172a;
+          color: #f8fafc;
+          font: inherit;
+          font-size: 16px;
+        }
+
+        .tank-dose-field input:focus {
+          outline: 2px solid rgba(34, 211, 238, 0.75);
+          outline-offset: 1px;
+        }
+
         @media (max-width: 640px) {
           .dashboard-controls {
             grid-template-columns: minmax(0, 1fr);
             gap: 12px;
             padding: 14px;
+          }
+
+          .tank-dose-grid {
+            grid-template-columns: minmax(0, 1fr);
           }
         }
       `}</style>
