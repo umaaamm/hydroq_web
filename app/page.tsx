@@ -7,8 +7,6 @@ export default function MqttSensorPage() {
   // State awal disesuaikan dengan skema JSON data sensor Anda
   const [sensorData, setSensorData] = useState({
     ppm: 0,
-    ketinggianAir: 0,
-    suhu_ruangan: 0,
     suhu: 0.0,
     tanggal_update: null,
   });
@@ -212,60 +210,6 @@ export default function MqttSensorPage() {
               {sensorData.ppm}
             </p>
             <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#64748b' }}>Parts Per Million</p>
-          </div>
-
-          {/* Card Sensor - Ketinggian */}
-          <div style={{
-            padding: '24px',
-            background: 'linear-gradient(135deg, rgba(34, 211, 238, 0.15) 0%, rgba(34, 211, 238, 0.05) 100%)',
-            borderRadius: '12px',
-            border: '2px solid rgba(34, 211, 238, 0.3)',
-            boxShadow: '0 10px 30px rgba(34, 211, 238, 0.1)',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              position: 'absolute',
-              top: '-50%',
-              right: '-50%',
-              width: '200px',
-              height: '200px',
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(34, 211, 238, 0.2) 0%, transparent 70%)',
-              pointerEvents: 'none'
-            }}></div>
-            <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px' }}>📏 Ketinggian Air</p>
-            <p style={{ margin: '0', fontSize: '36px', fontWeight: '700', color: '#22d3ee' }}>
-              {sensorData.ketinggianAir}
-            </p>
-            <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#64748b' }}>Sentimeter</p>
-          </div>
-
-          {/* Card Sensor - Suhu Ruangan */}
-          <div style={{
-            padding: '24px',
-            background: 'linear-gradient(135deg, rgba(248, 113, 113, 0.15) 0%, rgba(248, 113, 113, 0.05) 100%)',
-            borderRadius: '12px',
-            border: '2px solid rgba(248, 113, 113, 0.3)',
-            boxShadow: '0 10px 30px rgba(248, 113, 113, 0.1)',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              position: 'absolute',
-              top: '-50%',
-              right: '-50%',
-              width: '200px',
-              height: '200px',
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(248, 113, 113, 0.2) 0%, transparent 70%)',
-              pointerEvents: 'none'
-            }}></div>
-            <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px' }}>🌡️ Suhu Ruangan</p>
-            <p style={{ margin: '0', fontSize: '36px', fontWeight: '700', color: '#f87171' }}>
-              {sensorData.suhu_ruangan}
-            </p>
-            <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#64748b' }}>Derajat Celsius</p>
           </div>
 
           {/* Card Sensor - Suhu Air */}
