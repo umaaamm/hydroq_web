@@ -8,6 +8,7 @@ export default function MqttSensorPage() {
   const [sensorData, setSensorData] = useState({
     ppm: 0,
     suhu: 0.0,
+    jarak_cm: 0,
     rssi: 0,
     heap: 0,
     tanggal_update: null,
@@ -224,6 +225,8 @@ export default function MqttSensorPage() {
   };
   const ppmStatus = getStatusLevel(sensorData.ppm, ppmThreshold.min, ppmThreshold.max);
   const suhuStatus = getStatusLevel(sensorData.suhu, selectedThreshold.suhu.min, selectedThreshold.suhu.max);
+  const hasWaterDistance = hasSensorReading && Number.isFinite(Number(sensorData.jarak_cm));
+  const waterRefillNeeded = hasWaterDistance && Number(sensorData.jarak_cm) > 40;
   const ppmProgress = clamp(((sensorData.ppm - ppmThreshold.min) / (ppmThreshold.max - ppmThreshold.min || 1)) * 100, 0, 100);
   const suhuProgress = clamp(((sensorData.suhu - selectedThreshold.suhu.min) / (selectedThreshold.suhu.max - selectedThreshold.suhu.min || 1)) * 100, 0, 100);
   const tankVolumeLiters = Number(tankVolumeInput);
@@ -239,6 +242,13 @@ export default function MqttSensorPage() {
         color: '#cbd5e1',
         background: 'rgba(100, 116, 139, 0.14)',
       }
+    : waterRefillNeeded
+      ? {
+          title: 'Jarak air lebih dari 40 cm: perlu tambah air',
+          action: `Sensor membaca jarak ${Number(sensorData.jarak_cm).toLocaleString('id-ID')} cm. Tambahkan air secara bertahap hingga jarak sensor ke permukaan air tidak lebih dari 40 cm. Setelah air tercampur/sirkulasi, ukur PPM lagi (target ${ppmThreshold.min}–${ppmThreshold.max} PPM). Tambahkan nutrisi A/B hanya bila hasil PPM berada di bawah target, sesuai dosis label produk.`,
+          color: '#fecaca',
+          background: 'rgba(220, 38, 38, 0.14)',
+        }
     : ppmStatus === 'rendah'
       ? {
           title: 'PPM rendah: nutrisi kurang',
@@ -589,6 +599,25 @@ export default function MqttSensorPage() {
               </div>
             </div>
           </div>
+
+          <div style={{
+            padding: '24px',
+            background: waterRefillNeeded ? 'linear-gradient(135deg, rgba(127, 29, 29, 0.82), rgba(69, 10, 10, 0.72))' : 'linear-gradient(135deg, rgba(20, 184, 166, 0.15), rgba(20, 184, 166, 0.05))',
+            borderRadius: '12px',
+            border: `2px solid ${waterRefillNeeded ? '#ef4444' : 'rgba(45, 212, 191, 0.35)'}`,
+            boxShadow: `0 10px 30px ${waterRefillNeeded ? 'rgba(220, 38, 38, 0.32)' : 'rgba(20, 184, 166, 0.1)'}`,
+          }}>
+            <p style={{ margin: '0 0 12px', color: waterRefillNeeded ? '#fecaca' : '#94a3b8', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase' }}>Jarak permukaan air</p>
+            <p key={`jarak-${sensorData.jarak_cm}-${sensorData.tanggal_update ?? 'n'}`} className="metric-value" style={{ margin: 0, color: waterRefillNeeded ? '#fca5a5' : '#5eead4', fontSize: '36px', fontWeight: 700 }}>
+              {hasWaterDistance ? `${Number(sensorData.jarak_cm).toLocaleString('id-ID')} cm` : 'Menunggu data'}
+            </p>
+            <span style={{ ...getStatusStyle(waterRefillNeeded ? 'tinggi' : 'normal'), display: 'inline-flex', marginTop: '12px', padding: '6px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' }}>
+              {hasWaterDistance ? (waterRefillNeeded ? 'Perlu tambah air' : 'Di bawah batas isi ulang') : 'Data tidak tersedia'}
+            </span>
+            <p style={{ margin: '10px 0 0', color: waterRefillNeeded ? '#fee2e2' : '#94a3b8', fontSize: '12px', lineHeight: 1.5 }}>
+              Isi ulang disarankan jika jarak sensor ke permukaan air &gt; 40 cm.
+            </p>
+          </div>
         </div>
 
         <section aria-live="polite" style={{
@@ -601,10 +630,10 @@ export default function MqttSensorPage() {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '12px', flexWrap: 'wrap' }}>
             <h2 style={{ margin: 0, color: ppmRecommendation.color, fontSize: '17px' }}>
-              Rekomendasi PPM: {ppmRecommendation.title}
+              Rekomendasi tandon & PPM: {ppmRecommendation.title}
             </h2>
             <span style={{ color: '#cbd5e1', fontSize: '12px' }}>
-              {hasSensorReading ? `Terbaca ${sensorData.ppm} PPM · target ${ppmThreshold.min}–${ppmThreshold.max} PPM` : 'Belum ada pembacaan'}
+              {hasSensorReading ? `Jarak air ${hasWaterDistance ? `${sensorData.jarak_cm} cm` : 'tidak tersedia'} · PPM ${sensorData.ppm} · target ${ppmThreshold.min}–${ppmThreshold.max} PPM` : 'Belum ada pembacaan'}
             </span>
           </div>
           <p style={{ margin: '10px 0 0', color: '#e2e8f0', fontSize: '14px', lineHeight: 1.65 }}>
